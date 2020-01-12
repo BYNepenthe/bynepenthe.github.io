@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Java解析Word文件 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="之前做了一个题库导入的功能，模板为Word文件。系统用的Linux服务器，开始准备在Linux下处理。由于word中有一些高等数学、物理公式：使用apache的poi组件将word转为html，首先会将图片转为wmz格式，不支持网页中显示，再将wmz格式转为png格式，转出后的图片，出现像乱码一样的字符；然后，又使用batik组件先将wmz格式转为svg格式，再将svg格式转为png格式部分公式仍">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java解析Word文件">
+<meta property="og:url" content="http://yoursite.com/2015/10/08/Java%E8%A7%A3%E6%9E%90Word%E6%96%87%E4%BB%B6/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="之前做了一个题库导入的功能，模板为Word文件。系统用的Linux服务器，开始准备在Linux下处理。由于word中有一些高等数学、物理公式：使用apache的poi组件将word转为html，首先会将图片转为wmz格式，不支持网页中显示，再将wmz格式转为png格式，转出后的图片，出现像乱码一样的字符；然后，又使用batik组件先将wmz格式转为svg格式，再将svg格式转为png格式部分公式仍">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://yoursite.com/images/wmz.gif">
+<meta property="og:image" content="http://yoursite.com/images/svg_png.png">
+<meta property="article:published_time" content="2015-10-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-01-12T04:03:22.824Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="word">
+<meta property="article:tag" content="html">
+<meta property="article:tag" content="poi">
+<meta property="article:tag" content="batik">
+<meta property="article:tag" content="openoffice">
+<meta property="article:tag" content="jacob">
+<meta property="article:tag" content="jsoup">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/wmz.gif">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Java解析Word文件" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/10/08/Java%E8%A7%A3%E6%9E%90Word%E6%96%87%E4%BB%B6/" class="article-date">
+  <time datetime="2015-10-07T16:00:00.000Z" itemprop="datePublished">2015-10-08</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaWeb/">JavaWeb</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Java解析Word文件
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>之前做了一个题库导入的功能，模板为Word文件。系统用的Linux服务器，开始准备在Linux下处理。由于word中有一些高等数学、物理公式：<br><img src="/images/wmz.gif" alt="wmz"><br>使用apache的poi组件将word转为html，首先会将图片转为wmz格式，不支持网页中显示，再将wmz格式转为png格式，转出后的图片，出现像乱码一样的字符；然后，又使用batik组件先将wmz格式转为svg格式，再将svg格式转为png格式部分公式仍然出现乱码一样的字符：<br><img src="/images/svg_png.png" alt="svg_png"><br>然后，又换了一个思路，使用openOffice插件来处理，问题同样存在，未能解决。<br>折腾了半天，最后又回到了原点，在Windows下使用jacob组件将word转为html。整个过程分了下面四个步骤：</p>
+<a id="more"></a>
+<blockquote>
+<ul>
+<li>将上传的word文件写入服务器目录</li>
+<li>调用Windows虚拟机上用jacob写的服务，将word解析为html</li>
+<li>使用jsoup组件解析html，相关字段存入数据库中</li>
+<li>删除相关文件</li>
+</ul>
+</blockquote>
+<h2 id="将上传的word文件写入服务器目录"><a href="#将上传的word文件写入服务器目录" class="headerlink" title="将上传的word文件写入服务器目录"></a>将上传的word文件写入服务器目录</h2><pre><code>InputStream in = null;
+FileOutputStream fos = null;
+try {
+    in = files.getInputStream();
+    //1.将上传的文件写入公共目录
+    fos = new FileOutputStream(&quot;xxx/tiku_doc2html_temp/&quot;+fileName+&quot;.doc&quot;,false);
+    //创建一个缓冲区
+    byte buffer[] = new byte[1024];
+    //判断输入流中的数据是否已经读完的标识
+    int len = 0;
+    //循环将输入流读入到缓冲区当中，(len=in.read(buffer))&gt;0就表示in里面还有数据
+    while((len=in.read(buffer))&gt;0){
+        fos.write(buffer, 0, len);
+    }
+
+    fos.flush();
+    System.out.println(&quot;word upload success...&quot;);
+} catch (Exception e1) {
+    e1.printStackTrace();
+}finally{
+    if(in != null){                
+        try {
+            in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    if(fos != null){
+        try {
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}</code></pre><h2 id="调用Windows虚拟机上用jacob写的服务，将word解析为html"><a href="#调用Windows虚拟机上用jacob写的服务，将word解析为html" class="headerlink" title="调用Windows虚拟机上用jacob写的服务，将word解析为html"></a>调用Windows虚拟机上用jacob写的服务，将word解析为html</h2><pre><code>String url = &quot;http://xxx/wordtohtml/transform?docfile=E:/&quot;+fileName+&quot;.doc&amp;htmlfile=E:/&quot;+fileName+&quot;.html&quot;;
+HttpGet httpGet = new HttpGet(url);
+String data = HttpUtil.getString(httpAsyncClient, httpGet);
+System.out.println(&quot;---&gt;&gt;&gt;&quot;+data);
+
+String result = null;
+if(StringUtils.isNotBlank(data)){
+    com.alibaba.fastjson.JSONObject jsonObj = com.alibaba.fastjson.JSONObject
+            .parseObject(data);
+    if (jsonObj != null &amp;&amp; &quot;success&quot;.equals(jsonObj.getString(&quot;status&quot;))) {
+        System.out.println(&quot;word2html success...&quot;);
+        //3.解析html，相关字段存入数据库中
+        result = parseHtml(&quot;xxx/tiku_doc2html_temp/&quot;+fileName+&quot;.html&quot;);
+    }
+}</code></pre><h3 id="利用jacob组件将word解析为html"><a href="#利用jacob组件将word解析为html" class="headerlink" title="利用jacob组件将word解析为html"></a>利用jacob组件将word解析为html</h3><pre><code>@Path(&quot;wordtohtml&quot;)
+public class WordToHtmlController {
+    int WORD_HTML = 8;
+    int WORD_TXT = 7;
+    int EXCEL_HTML = 44;
+    int WORD_HTML_SIMPLE = 10;
+    /*
+    * new Variant(10)筛选过的网页
+    * new Variant(9) 单个文件网页
+    * new Variant(8) 另存为网页
+    * new Variant(7) 另存为txt格式
+    * new Variant(6) 另存为rtf格式
+    * new Variant(0) 另存为doc格式
+    */
+
+    /**
+     * WORD转HTML
+     * 
+     * @param docfile
+     *            WORD文件全路径
+     * @param htmlfile
+     *            转换后HTML存放路径
+     */
+    @Get(&quot;transform&quot;)
+    public String wordToHtml(Invocation inv,@Param(&quot;docfile&quot;) String docfile,@Param(&quot;htmlfile&quot;) String htmlfile) {
+        System.out.println(docfile+&quot;&lt;---&gt;&quot;+htmlfile);
+        JSONObject jsonObj = new JSONObject();
+        ActiveXComponent app = null;
+        try {
+            app = new ActiveXComponent(&quot;Word.Application&quot;); // 启动word
+            app.setProperty(&quot;Visible&quot;, new Variant(false));
+            app.setProperty(&quot;DisplayAlerts&quot;, new Variant(false));
+            Dispatch docs = app.getProperty(&quot;Documents&quot;).toDispatch();
+            Dispatch doc = Dispatch.invoke(
+                    docs,
+                    &quot;Open&quot;,
+                    Dispatch.Method,
+                    new Object[] { docfile, new Variant(false),
+                            new Variant(true) }, new int[1]).toDispatch();
+            Dispatch.invoke(doc, &quot;SaveAs&quot;, Dispatch.Method, new Object[] {
+                    htmlfile, new Variant(WORD_HTML_SIMPLE) }, new int[1]);
+            Variant f = new Variant(false);
+            Dispatch.call(doc, &quot;Close&quot;, f);
+//            ComThread.Release();//释放com线程
+            jsonObj.put(&quot;status&quot;, &quot;success&quot;);
+        } catch (Error e) {
+            System.out.println(&quot;word转换html异常&quot;);
+            jsonObj.put(&quot;status&quot;, &quot;error&quot;);
+            e.printStackTrace();
+        } finally {
+            if (app != null) {
+                app.invoke(&quot;Quit&quot;, new Variant[] {});
+                app = null;
+            }
+            ComThread.Release();  
+        }
+        return &quot;@&quot;+jsonObj;
+    }
+｝</code></pre><h2 id="使用jsoup组件解析html，相关字段存入数据库中"><a href="#使用jsoup组件解析html，相关字段存入数据库中" class="headerlink" title="使用jsoup组件解析html，相关字段存入数据库中"></a>使用jsoup组件解析html，相关字段存入数据库中</h2><pre><code>代码略</code></pre><h2 id="删除相关文件"><a href="#删除相关文件" class="headerlink" title="删除相关文件"></a>删除相关文件</h2><pre><code>//4.删除文件
+try {
+    FileUtils.forceDelete(new File(&quot;xxx/tiku_doc2html_temp/&quot;+fileName+&quot;.files&quot;));
+    FileUtils.forceDelete(new File(&quot;xxx/tiku_doc2html_temp/&quot;+fileName+&quot;.html&quot;));
+    FileUtils.forceDelete(new File(&quot;xxx/tiku_doc2html_temp/&quot;+fileName+&quot;.doc&quot;));
+} catch (IOException e) {
+    e.printStackTrace();
+}</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/10/08/Java%E8%A7%A3%E6%9E%90Word%E6%96%87%E4%BB%B6/" data-id="ck5ahn2z400004ns633wb0rh2" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/batik/" rel="tag">batik</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/html/" rel="tag">html</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jacob/" rel="tag">jacob</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/" rel="tag">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jsoup/" rel="tag">jsoup</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openoffice/" rel="tag">openoffice</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/poi/" rel="tag">poi</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/word/" rel="tag">word</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/11/01/Java%E4%BD%8D%E8%BF%90%E7%AE%97/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Java位运算
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/09/28/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Hello World</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/JavaWeb/">JavaWeb</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/batik/" rel="tag">batik</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/" rel="tag">html</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jacob/" rel="tag">jacob</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/" rel="tag">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jsoup/" rel="tag">jsoup</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/openoffice/" rel="tag">openoffice</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/poi/" rel="tag">poi</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/word/" rel="tag">word</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%B8%80%E4%B8%AA%E5%AD%97%E6%AE%B5%E4%BF%9D%E5%AD%98%E5%A4%9A%E4%B8%AA%E7%8A%B6%E6%80%81/" rel="tag">一个字段保存多个状态</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BD%8D%E8%BF%90%E7%AE%97/" rel="tag">位运算</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/batik/" style="font-size: 10px;">batik</a> <a href="/tags/html/" style="font-size: 10px;">html</a> <a href="/tags/jacob/" style="font-size: 10px;">jacob</a> <a href="/tags/java/" style="font-size: 20px;">java</a> <a href="/tags/jsoup/" style="font-size: 10px;">jsoup</a> <a href="/tags/openoffice/" style="font-size: 10px;">openoffice</a> <a href="/tags/poi/" style="font-size: 10px;">poi</a> <a href="/tags/word/" style="font-size: 10px;">word</a> <a href="/tags/%E4%B8%80%E4%B8%AA%E5%AD%97%E6%AE%B5%E4%BF%9D%E5%AD%98%E5%A4%9A%E4%B8%AA%E7%8A%B6%E6%80%81/" style="font-size: 10px;">一个字段保存多个状态</a> <a href="/tags/%E4%BD%8D%E8%BF%90%E7%AE%97/" style="font-size: 10px;">位运算</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2015/11/01/Java%E4%BD%8D%E8%BF%90%E7%AE%97/">Java位运算</a>
+          </li>
+        
+          <li>
+            <a href="/2015/10/08/Java%E8%A7%A3%E6%9E%90Word%E6%96%87%E4%BB%B6/">Java解析Word文件</a>
+          </li>
+        
+          <li>
+            <a href="/2015/09/28/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
